@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Oficinas</title>
+    <link rel="stylesheet" href="/css/reservas.css">
+</head>
+<body>
+    <div class="header">
+        <a href="/html/menuUsuario.html" class="menu-icon">☰</a> <!-- Ver si es admin o user -->
+        <span class="user-icon">👤</span>
+    </div>
+
+    <div class="container">
+        <div class="left-section">
+            <img src="/png/Desk.png" alt="Reserva Escritorio">
+        </div>
+        <div class="right-section">
+            <h1>Reserva de Oficinas</h1>
+            <form id="reservation-form">
+                <div class="selectors">
+                    <div>
+                        <span>PISO:</span>
+                        <input type="radio" name="floor" value="1" required> 1
+                        <input type="radio" name="floor" value="2" required> 2
+                    </div>
+                    <div>
+                        <span>DÍA:</span>
+                        <input type="date" name="date" class="date-picker" required>
+                    </div>
+                    <div>
+                        <span>HORARIO:</span>
+                        <span>Desde:</span>
+                        <input type="time" name="time-from" class="time-picker" required>
+                        <span>Hasta:</span>
+                        <input type="time" name="time-to" class="time-picker" required>
+                    </div>
+                    <div>
+                        <span>Asiento:</span>
+                        <input type="text" name="idAsiento" readonly required>
+                    </div>
+                    <div>
+                        <span>Estado:</span>
+                        <input type="text" name="idEstado" required>
+                    </div>
+                </div>
+                <button type="submit" class="confirm-btn">CONFIRMAR RESERVA</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="floor-plan" id="floor-plan-container">
+        <p>PLANO DE LAS OFICINAS</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const floorPlanContainer = document.getElementById('floor-plan-container');
+
+            // la selección del piso
+            const floorRadios = document.querySelectorAll('input[name="floor"]');
+            floorRadios.forEach(radio => {
+                radio.addEventListener('change', loadPlan);
+            });
+
+            function loadPlan() {
+    const selectedFloor = document.querySelector('input[name="floor"]:checked').value;
+    const selectedType = 'Escritorio';
+
+    fetch(`/getPlan?piso=${selectedFloor}&tipo=${selectedType}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const floorPlanContainer = document.getElementById('floor-plan-container');
+                const planImage = new Image();
+                planImage.src = data.planImage;
+
+                // RUTA DE LA IMAGEN 
+                console.log("Cargando imagen desde:", planImage.src);
+
+                floorPlanContainer.innerHTML = '';
+                floorPlanContainer.appendChild(planImage);
+
+                
+                planImage.onerror = function() {
+                    alert('No se pudo cargar la imagen del plano.');
+                };
+
+                planImage.onload = () => {
+                    data.icons.forEach(icon => {
+                        const iconElement = document.createElement('div');
+                        iconElement.className = 'icon';
+                        iconElement.style.left = `${icon.xPos}px`;
+                        iconElement.style.top = `${icon.yPos}px`;
+                        iconElement.textContent = icon.texto || '';
+                        iconElement.dataset.id = icon.idAsiento;
+                        iconElement.addEventListener('click', function() {
+                            document.querySelector('input[name="idAsiento"]').value = icon.idAsiento;
+                        });
+                        floorPlanContainer.appendChild(iconElement);
+                    });
+                };
+            } else {
+                alert('No se pudo cargar el plano. Intenta nuevamente.');
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar el plano:', error);
+        });
+}
+
+
+            //CARGA EL PLANO PERO NO LO ESTA HACIENDO
+            if (document.querySelector('input[name="floor"]:checked')) {
+                loadPlan();
+            }
+        });
+
+        // RESERVA
+        document.getElementById('reservation-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+
+            const formData = new FormData(this);
+            const reservationDetails = {
+                floor: formData.get('floor'),
+                date: formData.get('date'),
+                timeFrom: formData.get('time-from'),
+                timeTo: formData.get('time-to'),
+                idAsiento: formData.get('idAsiento'),//SACARLO?
+                idEstado: formData.get('idEstado')//SACARLO?
+            };
+
+            fetch('/reserve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reservationDetails)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reserva confirmada.');
+                    window.location.reload();
+                } else {
+                    alert('Hubo un problema al confirmar la reserva.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al confirmar la reserva:', error);
+                alert('Error al confirmar la reserva.');
+            });
+        });
+    </script>
+</body>
+</html>

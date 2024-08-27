@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Oficinas</title>
+    <link rel="stylesheet" href="/css/reservas.css">
+</head>
+<body>
+    <div class="header">
+        <a href="/html/menuUsuario.html" class="menu-icon">☰</a> <!-- Ver si es adm o user -->
+        <span class="user-icon">👤</span>
+    </div>
+
+    <div class="container">
+        <div class="left-section">
+            <img src="/png/Oficina.png" alt="Reserva Escritorio">
+        </div>
+        <div class="right-section">
+            <h1>Reserva de Oficinas</h1>
+            <div class="selectors">
+                <div>
+                    <span>PISO:</span>
+                    <button class="floor-btn">1</button>
+                    <button class="floor-btn">2</button>
+                </div>
+                <div>
+                    <span>DÍA:</span>
+                    <input type="date" class="date-picker">
+                </div>
+                <div>
+                    <span>HORARIO:</span>
+                    <span>Desde:</span>
+                    <input type="time" class="time-picker">
+                    <span>Hasta:</span>
+                    <input type="time" class="time-picker">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floor-plan">
+        <p>PLANO DE LAS OFICINAS</p>
+    </div>
+
+    <button class="confirm-btn">CONFIRMAR RESERVA</button>
+
+    <script src="/js/reservaOficina.js"></script>
+</body>
+</html>

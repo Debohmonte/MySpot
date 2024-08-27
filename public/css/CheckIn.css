@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e8f5e9;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #a5d6a7;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header .menu-icon,
+.header .user-icon {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.container {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reservation-table th,
+.reservation-table td {
+    border: 1px solid #a5d6a7;
+    padding: 10px;
+    text-align: center; 
+    vertical-align: middle;
+}
+
+.reservation-table th {
+    background-color: #a5d6a7;
+    font-size: 18px;
+}
+
+.reservation-table td {
+    font-size: 16px;
+}
+
+.checkin-slider {
+    width: 100px;
+    height: 30px;
+    background-color: #000;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.checkin-slider .slider {
+    width: 30px;
+    height: 30px;
+    background-color: #b6451f;
+    border-radius: 50%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: left 0.3s ease, background-color 0.3s ease;
+}
+
+.checkin-slider.checked {
+    background-color: #4caf50; 
+}
+
+.checkin-slider.checked .slider {
+    left: 70px;
+    background-color: #fff;
+}

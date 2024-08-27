@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Oficinas</title>
+    <link rel="stylesheet" href="FromDesckFinal.css"> 
+</head>
+<body>
+    <div class="reserva-container">
+        <div class="reserva-form">
+            <div class="header">
+                <div class="icon-container">
+                   
+                    <img src="Oficina.png" alt="Office Icon" class="office-icon">
+                </div>
+                <div class="details">
+                    <p><strong>PISO:</strong> <span class="pill">1</span> <span class="pill">2</span></p>
+                    <p><strong>DIA:</strong> <span class="calendar"></span></p>
+                    <p><strong>HORARIO:</strong> Desde: <input type="time"> Hasta: <input type="time"></p>
+                </div>
+            </div>
+            <div class="office-plan">
+                <!-- el plano de la oficina -->
+                <div class="office">
+                    <div class="plan-container">
+                        <img src="PlanoOficinaOKSILLAS.png"Plano de Oficina class="plan-img">
+                        <div class="overlay">
+                            <!--Fila duos-->
+                            <div class="workstation available" id="ws0" onclick="toggleStatus('ws0')" style="top: 30%; left: 3%;"></div>
+                            <div class="workstation available" id="ws01" onclick="toggleStatus('ws01')" style="top: 42%; left: 3%;"></div>
+                            <div class="workstation available" id="ws02" onclick="toggleStatus('ws02')" style="top: 56%; left: 3%;"></div>
+                            <div class="workstation available" id="ws03" onclick="toggleStatus('ws03')" style="top: 60%; left: 3%;"></div>
+                             <!--Fila uno-->
+                            <div class="workstation available" id="ws1" onclick="toggleStatus('ws1')" style="top: 16%; left: 13%;"></div>
+                            <div class="workstation available" id="ws2" onclick="toggleStatus('ws2')" style="top: 16%; left: 15%;"></div>
+                            <div class="workstation available" id="ws3" onclick="toggleStatus('ws3')" style="top: 24%; left: 13%;"></div>
+                            <div class="workstation available" id="ws4" onclick="toggleStatus('ws4')" style="top: 24%; left: 15%;"></div>
+                            <div class="workstation available" id="ws5" onclick="toggleStatus('ws5')" style="top: 33%; left: 13%;"></div>
+                            <div class="workstation available" id="ws6" onclick="toggleStatus('ws6')" style="top: 33%; left: 15%;"></div>
+                            <!--Fila dos-->
+                            <div class="workstation available" id="ws7" onclick="toggleStatus('ws7')" style="top: 16%; left: 23%;"></div>
+                            <div class="workstation available" id="ws8" onclick="toggleStatus('ws8')" style="top: 16%; left: 25%;"></div>
+                            <div class="workstation available" id="ws9" onclick="toggleStatus('ws9')" style="top: 24%; left: 23%;"></div>
+                            <div class="workstation available" id="ws10" onclick="toggleStatus('ws10')" style="top: 24%; left: 25%;"></div>
+                            <div class="workstation available" id="ws11" onclick="toggleStatus('ws11')" style="top: 33%; left: 23%;"></div>
+                            <div class="workstation available" id="ws12" onclick="toggleStatus('ws12')" style="top: 33%; left: 25%;"></div>
+                            <!--Fila tres-->
+                            <div class="workstation available" id="ws13" onclick="toggleStatus('ws13')" style="top: 16%; left: 35%;"></div>
+                            <div class="workstation available" id="ws14" onclick="toggleStatus('ws14')" style="top: 16%; left: 37%;"></div>
+                            <div class="workstation available" id="ws15" onclick="toggleStatus('ws15')" style="top: 24%; left: 35%;"></div>
+                            <div class="workstation available" id="ws16" onclick="toggleStatus('ws16')" style="top: 24%; left: 37%;"></div>
+                            <div class="workstation available" id="ws17" onclick="toggleStatus('ws17')" style="top: 33%; left: 35%;"></div>
+                            <div class="workstation available" id="ws18" onclick="toggleStatus('ws18')" style="top: 33%; left: 37%;"></div>
+                            <!--Fila cuatro-->
+                            <div class="workstation available" id="ws19" onclick="toggleStatus('ws19')" style="top: 16%; left: 45%;"></div>
+                            <div class="workstation available" id="ws20" onclick="toggleStatus('ws20')" style="top: 16%; left: 47%;"></div>
+                            <div class="workstation available" id="ws21" onclick="toggleStatus('ws21')" style="top: 24%; left: 45%;"></div>
+                            <div class="workstation available" id="ws22" onclick="toggleStatus('ws22')" style="top: 24%; left: 47%;"></div>
+                            <div class="workstation available" id="ws23" onclick="toggleStatus('ws23')" style="top: 33%; left: 45%;"></div>
+                            <div class="workstation available" id="ws24" onclick="toggleStatus('ws24')" style="top: 33%; left:47%;"></div>
+                             <!--Fila cinco-->
+                             <div class="workstation available" id="ws25" onclick="toggleStatus('ws25')" style="top: 8%; left: 58%;"></div>
+                             <div class="workstation available" id="ws26" onclick="toggleStatus('ws26')" style="top: 8%; left: 60%;"></div>
+                             <div class="workstation available" id="ws27" onclick="toggleStatus('ws27')" style="top: 16%; left: 58%;"></div>
+                             <div class="workstation available" id="ws28" onclick="toggleStatus('ws28')" style="top: 16%; left: 60%;"></div>
+                             <div class="workstation available" id="ws29" onclick="toggleStatus('ws29')" style="top: 24%; left: 58%;"></div>
+                             <div class="workstation available" id="ws30" onclick="toggleStatus('ws30')" style="top: 24%; left:60%;"></div>
+                             <div class="workstation available" id="ws31" onclick="toggleStatus('ws31')" style="top: 33%; left: 58%;"></div>
+                             <div class="workstation available" id="ws32" onclick="toggleStatus('ws32')" style="top: 33%; left:60%;"></div>
+                              <!--Fila seis-->
+                              <div class="workstation available" id="ws33" onclick="toggleStatus('ws33')" style="top: 8%; left: 67%;"></div>
+                              <div class="workstation available" id="ws34" onclick="toggleStatus('ws34')" style="top: 8%; left: 69%;"></div>
+                              <div class="workstation available" id="ws35" onclick="toggleStatus('ws35')" style="top: 16%; left: 67%;"></div>
+                              <div class="workstation available" id="ws36" onclick="toggleStatus('ws36')" style="top: 16%; left: 69%;"></div>
+                              <div class="workstation available" id="ws37" onclick="toggleStatus('ws37')" style="top: 24%; left: 67%;"></div>
+                              <div class="workstation available" id="ws38" onclick="toggleStatus('ws38')" style="top: 24%; left:69%;"></div>
+                              <div class="workstation available" id="ws39" onclick="toggleStatus('ws39')" style="top: 33%; left: 67%;"></div>
+                              <div class="workstation available" id="ws40" onclick="toggleStatus('ws40')" style="top: 33%; left:69%;"></div>
+                              <!--Fila siete-->
+                              <div class="workstation available" id="ws41" onclick="toggleStatus('ws41')" style="top: 8%; left: 80%;"></div>
+                              <div class="workstation available" id="ws42" onclick="toggleStatus('ws42')" style="top: 8%; left: 82%;"></div>
+                              <div class="workstation available" id="ws43" onclick="toggleStatus('ws43')" style="top: 16%; left: 80%;"></div>
+                              <div class="workstation available" id="ws44" onclick="toggleStatus('ws44')" style="top: 16%; left: 82%;"></div>
+                              <div class="workstation available" id="ws45" onclick="toggleStatus('ws45')" style="top: 24%; left: 80%;"></div>
+                              <div class="workstation available" id="ws46" onclick="toggleStatus('ws46')" style="top: 24%; left:82%;"></div>
+                              <div class="workstation available" id="ws47" onclick="toggleStatus('ws47')" style="top: 33%; left: 80%;"></div>
+                              <div class="workstation available" id="ws48" onclick="toggleStatus('ws48')" style="top: 33%; left:82%;"></div>
+                                <!--Fila ocho-->
+                              <div class="workstation available" id="ws49" onclick="toggleStatus('ws49')" style="top: 8%; left: 89%;"></div>
+                              <div class="workstation available" id="ws50" onclick="toggleStatus('ws50')" style="top: 8%; left: 91%;"></div>
+                              <div class="workstation available" id="ws51" onclick="toggleStatus('ws51')" style="top: 16%; left: 89%;"></div>
+                              <div class="workstation available" id="ws52" onclick="toggleStatus('ws52')" style="top: 16%; left: 91%;"></div>
+                              <div class="workstation available" id="ws53" onclick="toggleStatus('ws53')" style="top: 24%; left: 89%;"></div>
+                              <div class="workstation available" id="ws54" onclick="toggleStatus('ws54')" style="top: 24%; left: 91%;"></div>
+                              <div class="workstation available" id="ws55" onclick="toggleStatus('ws55')" style="top: 33%; left: 89%;"></div>
+                              <div class="workstation available" id="ws56" onclick="toggleStatus('ws56')" style="top: 33%; left: 91%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="confirm-button">CONFIRMAR RESERVA</button>
+        </div>
+    </div>
+    <!--<script src="plano.js"></script> El archivo JS para el toggleStatus -->
+</body>
+</html>

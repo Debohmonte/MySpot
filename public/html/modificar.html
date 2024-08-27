@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador - Reserva de Oficinas</title>
+    <link rel="stylesheet" href="/css/modificar.css">
+</head>
+<body>
+    <div class="header">
+        <a href="/html/menuAdm.html" class="menu-icon">☰</a>
+        <span class="user-icon">👤</span>
+    </div>
+
+    <div class="container">
+        <h1>Administrador - Configuración de Plano</h1>
+        <div class="upload-section">
+            <label for="floor-plan-upload">Subir imagen del plano:</label>
+            <input type="file" id="floor-plan-upload" accept="image/*">
+        </div>
+
+        <div class="selectors">
+            <label for="floor-select">Seleccionar Piso:</label>
+            <select id="floor-select">
+                <option value="1">Piso 1</option>
+                <option value="2">Piso 2</option>
+                <option value="3">Piso 3</option>
+            </select>
+
+            <label for="type-select">Tipo de Espacio:</label>
+            <select id="type-select">
+                <option value="Escritorio">Escritorio</option>
+                <option value="Oficina">Oficina</option>
+            </select>
+        </div>
+
+        <div class="floor-plan" id="floor-plan-container">
+            <p>PLANO DE LAS OFICINAS</p>
+        </div>
+
+        <button id="create-button">Crear Icono de Espacio </button>
+        <button id="confirm-changes">Confirmar Modificaciones</button>
+    </div>
+
+    <script src="/js/modificar.js"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+}
+
+.reserva-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: #e0f7e9;
+    padding: 20px;
+}
+
+.reserva-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 100%;
+    max-width: 100%; 
+    height: 100%;
+    max-height: 100%; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: auto;
+}
+
+.icon-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.details {
+    margin-bottom: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.details p {
+    margin: 10px 0;
+    color: #333;
+    font-weight: bold;
+}
+
+.pill {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0 5px;
+    background-color: #a0d468;
+    color: white;
+    border-radius: 50%;
+}
+
+.office-plan {
+    background-color: #d1ffd6;
+    padding: 40px;
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    flex-grow: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.confirm-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+    position: absolute;
+    bottom: 30px; 
+    right: 30px;
+}
+
+.confirm-button:hover {
+    background-color: #357abd;
+}
+
+.office {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+}
+
+.plan-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.plan-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.workstation {
+    position: absolute;
+    width: 20px; /* Ajusta el tamaño del botón según los puntos azules */
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.available {
+    background-color: rgba(76, 175, 80, 1); /* verde */
+}
+
+.unavailable {
+    background-color: rgba(244, 67, 54, 1); /* rojo */
+}
+
+.workstation:hover {
+    opacity: 0.8;
+}
