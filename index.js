@@ -2,6 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const multer = require('multer');
+
+// Configuración de `multer` para guardar imágenes
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads'); // Carpeta donde se guardarán las imágenes
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 const db = new sqlite3.Database('./database.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
     if (err) {
@@ -15,12 +29,11 @@ const db = new sqlite3.Database('./database.db', sqlite3.OPEN_READWRITE | sqlite
 const app = express();
 const port = 3000;
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// HTML
+// Rutas para servir los archivos HTML
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/html/login.html'));
 });
@@ -66,12 +79,15 @@ app.post('/login', (req, res) => {
             return res.status(404).send('Usuario no encontrado');
         }
     });
-});
-// Ruta para guardar el plano y los íconos 
-app.post('/savePlan', (req, res) => {
-    const { rutaArchivo, idPiso, tipo, icons } = req.body;
+});// Ruta para guardar el plano y los íconos asociados
+app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
+    const { idPiso, tipo, icons } = req.body;
+    const rutaArchivo = `/uploads/${req.file.filename}`;
 
-    if (!rutaArchivo || !idPiso || !tipo || !icons || icons.length === 0) {
+    console.log('Datos recibidos en /savePlan:', { rutaArchivo, idPiso, tipo, icons });
+
+    if (!rutaArchivo || !idPiso || !tipo || !icons || JSON.parse(icons).length === 0) {
+        console.error('Datos incompletos:', { rutaArchivo, idPiso, tipo, icons });
         return res.status(400).json({ success: false, message: 'Datos incompletos.' });
     }
 
@@ -91,12 +107,12 @@ app.post('/savePlan', (req, res) => {
 
         console.log('Plano guardado con ID:', idPlano);
 
-        const insertIconQuery = 'INSERT INTO AsientoOficinaPlano (IdPlano, IdAsiento, IdOficina) VALUES (?, ?, ?)';
+        const insertIconQuery = 'INSERT INTO AsientoOficinaPlano1 (IdPlano, IdPiso, IdAsiento, IdOficina, xPos, yPos) VALUES (?, ?, ?, ?, ?, ?)';
         const insertStmt = db.prepare(insertIconQuery);
 
-        icons.forEach(icon => {
+        JSON.parse(icons).forEach(icon => {
             if (tipo === 'Escritorio') {
-                insertStmt.run([idPlano, icon.idAsiento, null], function (err) {
+                insertStmt.run([idPlano, idPiso, icon.idAsiento, null, icon.xPos, icon.yPos], function (err) {
                     if (err) {
                         console.error('Error al insertar un ícono (escritorio):', err.message);
                     } else {
@@ -104,7 +120,7 @@ app.post('/savePlan', (req, res) => {
                     }
                 });
             } else if (tipo === 'Oficina') {
-                insertStmt.run([idPlano, null, icon.idOficina], function (err) {
+                insertStmt.run([idPlano, idPiso, null, icon.idOficina, icon.xPos, icon.yPos], function (err) {
                     if (err) {
                         console.error('Error al insertar un ícono (oficina):', err.message);
                     } else {
@@ -123,7 +139,8 @@ app.post('/savePlan', (req, res) => {
         });
     });
 });
-///planos get
+
+// Ruta para obtener un plano y sus íconos asociados
 app.get('/getPlan', (req, res) => {
     const { piso, tipo } = req.query;
 
@@ -135,8 +152,8 @@ app.get('/getPlan', (req, res) => {
         }
 
         if (row) {
-            const planQuery = `SELECT * FROM AsientoOficinaPlano WHERE IdPlano = ?`;
-            db.all(planQuery, [row.IdPlano], (err, icons) => {
+            const planQuery = `SELECT * FROM AsientoOficinaPlano1 WHERE IdPlano = ? AND IdPiso = ?`;
+            db.all(planQuery, [row.IdPlano, piso], (err, icons) => {
                 if (err) {
                     console.error('Error al obtener los íconos del plano:', err.message);
                     return res.status(500).json({ success: false, message: 'Error interno del servidor' });

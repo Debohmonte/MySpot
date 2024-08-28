@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const floorPlanContainer = document.getElementById('floor-plan-container');
 

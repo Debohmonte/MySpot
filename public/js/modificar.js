@@ -6,7 +6,7 @@ document.getElementById('floor-plan-upload').addEventListener('change', function
         img.src = e.target.result;
         img.id = "floor-plan-image";
         const container = document.getElementById('floor-plan-container');
-        container.innerHTML = '';
+        container.innerHTML = '';  // Limpia el contenedor antes de agregar la nueva imagen
         container.appendChild(img);
     };
     reader.readAsDataURL(event.target.files[0]);
@@ -14,7 +14,7 @@ document.getElementById('floor-plan-upload').addEventListener('change', function
 
 // CREA LOS ICONOS
 let createIconMode = false;
-let iconsData = []; // ARRAY DE ICONOS CREASDOS
+let iconsData = []; // ARRAY DE ICONOS CREADOS
 
 document.getElementById('create-button').addEventListener('click', function () {
     createIconMode = !createIconMode;
@@ -32,7 +32,7 @@ document.getElementById('floor-plan-container').addEventListener('click', functi
         const floor = document.getElementById('floor-select').value;
         const type = document.getElementById('type-select').value;
 
-        // QUE ESTEN LOSS ICOMOS POSICIONADOS
+        // REMOVER ÍCONOS SI YA EXISTEN EN LA MISMA POSICIÓN
         const existingIcon = document.elementFromPoint(event.clientX, event.clientY);
         if (existingIcon && existingIcon.classList.contains('icon')) {
             container.removeChild(existingIcon);
@@ -64,7 +64,7 @@ document.getElementById('floor-plan-container').addEventListener('click', functi
     }
 });
 
-// RENOMBRA LOS ICONOS ? ES NECESARIO
+// RENOMBRA LOS ICONOS
 function renumberIcons(container) {
     const icons = container.querySelectorAll('.icon');
     icons.forEach((icon, index) => {
@@ -77,36 +77,21 @@ function generateId() {
     return Math.floor(Math.random() * 1000000);
 }
 
-//GUARDAR
+// GUARDAR
 document.getElementById('confirm-changes').addEventListener('click', function () {
-    const rutaArchivo = document.getElementById('floor-plan-upload').value;
+    const formData = new FormData();
+    const fileInput = document.getElementById('floor-plan-upload');
     const idPiso = document.getElementById('floor-select').value;
     const tipo = document.getElementById('type-select').value;
 
-    // RUTA DE DB
-    if (!rutaArchivo || !idPiso || !tipo || iconsData.length === 0) {
-        alert('Faltan datos para completar la operación.');
-        return;
-    }
-
-    console.log('Datos enviados:', {
-        rutaArchivo: rutaArchivo,
-        idPiso: idPiso,
-        tipo: tipo,
-        icons: iconsData
-    });
+    formData.append('planoImagen', fileInput.files[0]); // Subir la imagen
+    formData.append('idPiso', idPiso);
+    formData.append('tipo', tipo);
+    formData.append('icons', JSON.stringify(iconsData)); // Enviar los íconos en formato JSON
 
     fetch('/savePlan', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            rutaArchivo: rutaArchivo,
-            idPiso: idPiso,
-            tipo: tipo,
-            icons: iconsData
-        })
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
