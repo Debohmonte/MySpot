@@ -3,6 +3,19 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const multer = require('multer');
+const session = require('express-session');  // Añadir esto
+
+const app = express();
+const port = 3000;
+
+// Configuración de la sesión
+app.use(session({
+    secret: 'mysecretkey',  // Cambia esto por una clave secreta real
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }  // Debe ser 'true' si usas HTTPS
+}));
+
 
 
 const storage = multer.diskStorage({
@@ -26,8 +39,7 @@ const db = new sqlite3.Database('./database.db', sqlite3.OPEN_READWRITE | sqlite
     }
 });
 
-const app = express();
-const port = 3000;
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -50,8 +62,6 @@ app.get('/menuAdm', (req, res) => {
 app.post('/login', (req, res) => {
     const { IdUsuario, password } = req.body;
 
-    console.log('Datos recibidos:', { IdUsuario, password });
-
     const userId = parseInt(IdUsuario.trim(), 10);
 
     const query = 'SELECT * FROM Usuario WHERE IdUsuario = ?';
@@ -61,10 +71,12 @@ app.post('/login', (req, res) => {
             return res.status(500).send('Error interno del servidor');
         }
 
-        console.log('Resultado de la consulta:', row);
-
         if (row) {
             if (row.Password === password) {
+                // Guardar el userId en la sesión del servidor
+                req.session.userId = userId;
+                console.log('User ID guardado en la sesión:', req.session.userId);  // Verificar que se guarda correctamente
+                
                 if (row.IdGrupoUsuario === 1) {
                     return res.redirect('/menuAdm');
                 } else if (row.IdGrupoUsuario === 2) {
@@ -80,10 +92,12 @@ app.post('/login', (req, res) => {
         }
     });
 });
-      
+
 // PLANOS GET
 app.get('/getPlan', (req, res) => {
     const { piso, tipo } = req.query;
+    console.log(`Recibido: Piso - ${piso}, Tipo - ${tipo}`);
+    
 
     const query = `SELECT * FROM Plano WHERE IdPiso = ? AND Tipo = ? ORDER BY IdPlano DESC LIMIT 1`;
     db.get(query, [piso, tipo], (err, row) => {
@@ -170,11 +184,14 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
         });
     });
 });
-
-//RESERVA
+//reservsa
 app.post('/reserve', (req, res) => {
     const { idUsuario, floor, date, timeFrom, timeTo, idAsiento } = req.body;
     console.log('Datos recibidos para la reserva:', { idUsuario, floor, date, timeFrom, timeTo, idAsiento });
+
+    if (!idUsuario || !floor || !date || !timeFrom || !timeTo || !idAsiento) {
+        return res.status(400).json({ success: false, message: 'Datos incompletos para realizar la reserva.' });
+    }
 
     const checkAvailabilityQuery = 'SELECT IdEstado FROM Asiento1 WHERE IdAsiento = ? AND IdPiso = ?';
 
@@ -183,8 +200,6 @@ app.post('/reserve', (req, res) => {
             console.error('Error al verificar disponibilidad:', err.message);
             return res.status(500).json({ success: false, message: 'Error al verificar disponibilidad.' });
         }
-
-        console.log('Resultado de la consulta de disponibilidad:', row);
 
         if (row && row.IdEstado == 1) {  // Estado disponible
             console.log('Asiento disponible. Procediendo con la reserva...');
@@ -222,7 +237,6 @@ app.post('/reserve', (req, res) => {
         }
     });
 });
-
 
 // Iniciar el servidor
 app.listen(port, () => {
