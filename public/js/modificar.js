@@ -6,7 +6,7 @@ document.getElementById('floor-plan-upload').addEventListener('change', function
         img.src = e.target.result;
         img.id = "floor-plan-image";
         const container = document.getElementById('floor-plan-container');
-        container.innerHTML = '';  // Limpia el contenedor antes de agregar la nueva imagen
+        container.innerHTML = ''; 
         container.appendChild(img);
     };
     reader.readAsDataURL(event.target.files[0]);
@@ -56,7 +56,8 @@ document.getElementById('floor-plan-container').addEventListener('click', functi
                 piso: floor,
                 tipo: type,
                 xPos: x,
-                yPos: y
+                yPos: y,
+                estado: 1  // Estado "Disponible"
             });
 
             renumberIcons(container);
@@ -84,10 +85,10 @@ document.getElementById('confirm-changes').addEventListener('click', function ()
     const idPiso = document.getElementById('floor-select').value;
     const tipo = document.getElementById('type-select').value;
 
-    formData.append('planoImagen', fileInput.files[0]); // Subir la imagen
+    formData.append('planoImagen', fileInput.files[0]); // SUBE LA IMAGEN
     formData.append('idPiso', idPiso);
     formData.append('tipo', tipo);
-    formData.append('icons', JSON.stringify(iconsData)); // Enviar los íconos en formato JSON
+    formData.append('icons', JSON.stringify(iconsData)); // ICONOS formato JSON ?
 
     fetch('/savePlan', {
         method: 'POST',

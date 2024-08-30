@@ -4,10 +4,10 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const multer = require('multer');
 
-// Configuración de `multer` para guardar imágenes
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads'); // Carpeta donde se guardarán las imágenes
+        cb(null, 'public/uploads'); 
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -33,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Rutas para servir los archivos HTML
+//  HTML
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/html/login.html'));
 });
@@ -46,7 +46,7 @@ app.get('/menuAdm', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/html/menuAdm.html'));
 });
 
-// login
+// LOGIN
 app.post('/login', (req, res) => {
     const { IdUsuario, password } = req.body;
 
@@ -79,7 +79,46 @@ app.post('/login', (req, res) => {
             return res.status(404).send('Usuario no encontrado');
         }
     });
-});// Ruta para guardar el plano y los íconos asociados
+});
+      
+// PLANOS GET
+app.get('/getPlan', (req, res) => {
+    const { piso, tipo } = req.query;
+
+    const query = `SELECT * FROM Plano WHERE IdPiso = ? AND Tipo = ? ORDER BY IdPlano DESC LIMIT 1`;
+    db.get(query, [piso, tipo], (err, row) => {
+        if (err) {
+            console.error('Error al obtener el plano:', err.message);
+            return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+        }
+
+        if (row) {
+            const planQuery = `SELECT * FROM Asiento1 WHERE IdPlano = ? AND IdPiso = ?`;
+            db.all(planQuery, [row.IdPlano, piso], (err, icons) => {
+                if (err) {
+                    console.error('Error al obtener los íconos del plano:', err.message);
+                    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+                }
+
+                res.json({
+                    success: true,
+                    planImage: row.RutaArchivo,
+                    icons: icons.map(icon => ({
+                        xPos: icon.xPos,
+                        yPos: icon.yPos,
+                        idAsiento: icon.IdAsiento,
+                        texto: `Asiento ${icon.IdAsiento}`,
+                        estado: icon.IdEstado // Añadimos el estado
+                    }))
+                });
+            });
+        } else {
+            res.json({ success: false, message: 'Plano no encontrado' });
+        }
+    });
+})
+
+// SAVE PALNOS
 app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
     const { idPiso, tipo, icons } = req.body;
     const rutaArchivo = `/uploads/${req.file.filename}`;
@@ -91,6 +130,7 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
         return res.status(400).json({ success: false, message: 'Datos incompletos.' });
     }
 
+    
     const insertPlanQuery = 'INSERT INTO Plano (RutaArchivo, IdPiso, Tipo) VALUES (?, ?, ?)';
     db.run(insertPlanQuery, [rutaArchivo, idPiso, tipo], function (err) {
         if (err) {
@@ -107,27 +147,18 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
 
         console.log('Plano guardado con ID:', idPlano);
 
-        const insertIconQuery = 'INSERT INTO AsientoOficinaPlano1 (IdPlano, IdPiso, IdAsiento, IdOficina, xPos, yPos) VALUES (?, ?, ?, ?, ?, ?)';
+        //(asientos u oficinas)
+        const insertIconQuery = 'INSERT INTO Asiento1 (IdPlano, IdPiso, xPos, yPos, IdEstado) VALUES (?, ?, ?, ?, ?)';
         const insertStmt = db.prepare(insertIconQuery);
 
         JSON.parse(icons).forEach(icon => {
-            if (tipo === 'Escritorio') {
-                insertStmt.run([idPlano, idPiso, icon.idAsiento, null, icon.xPos, icon.yPos], function (err) {
-                    if (err) {
-                        console.error('Error al insertar un ícono (escritorio):', err.message);
-                    } else {
-                        console.log('Ícono (escritorio) insertado:', { IdPlano: idPlano, IdAsiento: icon.idAsiento });
-                    }
-                });
-            } else if (tipo === 'Oficina') {
-                insertStmt.run([idPlano, idPiso, null, icon.idOficina, icon.xPos, icon.yPos], function (err) {
-                    if (err) {
-                        console.error('Error al insertar un ícono (oficina):', err.message);
-                    } else {
-                        console.log('Ícono (oficina) insertado:', { IdPlano: idPlano, IdOficina: icon.idOficina });
-                    }
-                });
-            }
+            insertStmt.run([idPlano, idPiso, icon.xPos, icon.yPos, 1], function (err) {
+                if (err) {
+                    console.error('Error al insertar un ícono:', err.message);
+                } else {
+                    console.log('Ícono insertado:', { IdPlano: idPlano });
+                }
+            });
         });
 
         insertStmt.finalize(err => {
@@ -140,38 +171,54 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
     });
 });
 
-// Ruta para obtener un plano y sus íconos asociados
-app.get('/getPlan', (req, res) => {
-    const { piso, tipo } = req.query;
+//RESERVA
+app.post('/reserve', (req, res) => {
+    const { idUsuario, floor, date, timeFrom, timeTo, idAsiento } = req.body;
+    console.log('Datos recibidos para la reserva:', { idUsuario, floor, date, timeFrom, timeTo, idAsiento });
 
-    const query = `SELECT * FROM Plano WHERE IdPiso = ? AND Tipo = ? ORDER BY IdPlano DESC LIMIT 1`; // Selecciona el último plano
-    db.get(query, [piso, tipo], (err, row) => {
+    const checkAvailabilityQuery = 'SELECT IdEstado FROM Asiento1 WHERE IdAsiento = ? AND IdPiso = ?';
+
+    db.get(checkAvailabilityQuery, [idAsiento, floor], (err, row) => {
         if (err) {
-            console.error('Error al obtener el plano:', err.message);
-            return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+            console.error('Error al verificar disponibilidad:', err.message);
+            return res.status(500).json({ success: false, message: 'Error al verificar disponibilidad.' });
         }
 
-        if (row) {
-            const planQuery = `SELECT * FROM AsientoOficinaPlano1 WHERE IdPlano = ? AND IdPiso = ?`;
-            db.all(planQuery, [row.IdPlano, piso], (err, icons) => {
+        console.log('Resultado de la consulta de disponibilidad:', row);
+
+        if (row && row.IdEstado == 1) {  // Estado disponible
+            console.log('Asiento disponible. Procediendo con la reserva...');
+
+            const idEstado = 2;  // Estado reservado
+            const insertReservationQuery = `
+                INSERT INTO ReservaEscritorio (IdUsuario, Fecha, HoraInicio, HoraFinal, IdAsiento, IdPiso, IdEstado)
+                VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+            db.run(insertReservationQuery, [idUsuario, date, timeFrom, timeTo, idAsiento, floor, idEstado], function (err) {
                 if (err) {
-                    console.error('Error al obtener los íconos del plano:', err.message);
-                    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+                    console.error('Error al guardar la reserva:', err.message);
+                    return res.status(500).json({ success: false, message: 'Error al guardar la reserva.' });
                 }
 
-                res.json({
-                    success: true,
-                    planImage: row.RutaArchivo,
-                    icons: icons.map(icon => ({
-                        xPos: icon.xPos,
-                        yPos: icon.yPos,
-                        idAsiento: icon.IdAsiento,
-                        texto: `Asiento ${icon.IdAsiento}` // Personaliza el texto si lo necesitas
-                    }))
+                console.log('Reserva insertada correctamente.');
+
+                const updateSeatStatusQuery = 'UPDATE Asiento1 SET IdEstado = ? WHERE IdAsiento = ? AND IdPiso = ?';
+                db.run(updateSeatStatusQuery, [idEstado, idAsiento, floor], (err) => {
+                    if (err) {
+                        console.error('Error al actualizar el estado del asiento en Asiento1:', err.message);
+                        return res.status(500).json({ success: false, message: 'Error al actualizar el estado del asiento en Asiento1.' });
+                    }
+                    console.log('Estado del asiento actualizado a reservado en Asiento1.');
+                    res.json({ success: true, message: 'Reserva realizada con éxito.' });
                 });
             });
         } else {
-            res.json({ success: false, message: 'Plano no encontrado' });
+            if (row) {
+                console.log(`El asiento no está disponible. Estado actual: ${row.IdEstado}`);
+            } else {
+                console.log('El asiento no existe en la base de datos.');
+            }
+            res.status(400).json({ success: false, message: 'El asiento no está disponible.' });
         }
     });
 });
@@ -179,5 +226,5 @@ app.get('/getPlan', (req, res) => {
 
 // Iniciar el servidor
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`App listening at http://localhost:${port}`);
 });

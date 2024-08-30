@@ -43,11 +43,15 @@ h1 {
     padding: 20px;
     text-align: center;
     position: relative;
+    width: 100%;
+    height: auto;
 }
 
 .floor-plan img {
     max-width: 100%;
     border-radius: 15px;
+    display: block;
+    margin: 0 auto;
 }
 
 .icon {

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
     const floorPlanContainer = document.getElementById('floor-plan-container');
 
     // PISO Y TIPO
@@ -35,4 +35,4 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error al cargar el plano:', error);
         });
-});
+});*/

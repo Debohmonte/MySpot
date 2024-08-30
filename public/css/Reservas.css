@@ -1,10 +1,3 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #e8f5e9;
-    margin: 0;
-    padding: 0;
-}
-
 .header {
     background-color: #a5d6a7;
     padding: 10px;
@@ -26,6 +19,68 @@ body {
     padding: 20px;
 }
 
+
+.icon.disponible {
+    background-color: #4caf50; /* Verde para disponible */
+}
+
+.icon.ocupado {
+    background-color: #f44336; /* Rojo para ocupado */
+}
+
+.icon.on-timer {
+    background-color: #ffeb3b; /* Amarillo para on timer */
+}
+
+
+body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9;
+            margin: 0;
+            padding: 0;
+        }
+
+.container {
+            padding: 20px;
+        }
+
+.floor-plan {
+            background-color: #dcedc8;
+            border-radius: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+        
+.floor-plan img {
+            max-width: 98%;
+            border-radius: 15px;
+            display: block;
+            margin: 0 auto;
+        }
+
+
+
+.icon {
+            width: 30px;
+            height: 30px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10; 
+        }
+        
+        
 .left-section {
     flex: 1;
     background-color: #a5d6a7;
@@ -80,16 +135,6 @@ body {
     padding: 5px;
     border: 1px solid #ccc;
     font-size: 16px;
-}
-
-.floor-plan {
-    background-color: #a5d6a7;
-    border-radius: 15px;
-    margin: 20px;
-    padding: 50px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
 }
 
 .confirm-btn {
