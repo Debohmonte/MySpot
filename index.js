@@ -75,7 +75,7 @@ app.post('/login', (req, res) => {
             if (row.Password === password) {
                 // Guardar el userId en la sesión del servidor
                 req.session.userId = userId;
-                console.log('User ID guardado en la sesión:', req.session.userId);  // Verificar que se guarda correctamente
+                console.log('User ID guardado en la sesión:', req.session.userId);  /
                 
                 if (row.IdGrupoUsuario === 1) {
                     return res.redirect('/menuAdm');
@@ -234,6 +234,111 @@ app.post('/reserve', (req, res) => {
                 console.log('El asiento no existe en la base de datos.');
             }
             res.status(400).json({ success: false, message: 'El asiento no está disponible.' });
+        }
+    });
+});
+
+app.post('/cancelReservation', (req, res) => {
+    const { reserva, dia, horario } = req.body;
+
+  
+    const query = `
+        DELETE FROM ReservaEscritorio
+        WHERE IdAsiento = (SELECT IdAsiento FROM Asiento WHERE nombre = ?)
+        AND Fecha = ?
+        AND HoraInicio = ?
+    `;
+
+   
+  
+
+    db.run(query, [asiento.trim(), dia, horario.split(' ')[0]], function(err) {
+        if (err) {
+            console.error('Error al cancelar la reserva:', err.message);
+            return res.status(500).json({ success: false, message: 'Error al cancelar la reserva.' });
+        }
+
+        res.json({ success: true });
+    });
+});
+
+app.post('/checkIn', (req, res) => {
+    const { idReserva, tipoReserva } = req.body;
+
+    let query = '';
+    if (tipoReserva === 'Escritorio') {
+        query = `
+            UPDATE ReservaEscritorio
+            SET HoraCheckIn = time('now', 'localtime')
+            WHERE IdReservaEscritorio = ?
+        `;
+    } else if (tipoReserva === 'Oficina') {
+        query = `
+            UPDATE ReservaOficina
+            SET HoraCheckIn = time('now', 'localtime')
+            WHERE IdReservaOficina = ?
+        `;
+    } else {
+        return res.status(400).json({ success: false, message: 'Tipo de reserva no válido.' });
+    }
+
+    db.run(query, [idReserva], function(err) {
+        if (err) {
+            console.error('Error al realizar el check-in:', err.message);
+            return res.status(500).json({ success: false, message: 'Error al realizar el check-in.' });
+        }
+
+        res.json({ success: true });
+    });
+});
+
+
+app.get('/getReservas', (req, res) => {
+    const userId = req.query.userId;
+
+    const query = `
+        SELECT 
+            'Escritorio' AS Tipo, 
+            R.IdReservaEscritorio AS IdReserva,  
+            'Asiento ' || A.IdAsiento || ' P' || R.IdPiso AS Reserva,
+            R.Fecha, 
+            R.HoraInicio, 
+            R.HoraFinal,
+            R.HoraCheckIn
+        FROM 
+            ReservaEscritorio R 
+            INNER JOIN Asiento A ON R.IdAsiento = A.IdAsiento
+        WHERE 
+            R.IdUsuario = ?
+        UNION ALL
+        SELECT 
+            'Oficina' AS Tipo, 
+            RO.IdReservaOficina AS IdReserva,  
+            'Oficina ' || O.IdOficina || ' P' || RO.IdPiso AS Reserva,
+            RO.Fecha, 
+            RO.HoraInicio, 
+            RO.HoraFinal,
+            RO.HoraCheckIn
+        FROM 
+            ReservaOficina RO 
+            INNER JOIN Oficina O ON RO.IdOficina = O.IdOficina
+        WHERE 
+            RO.IdUsuario = ?
+        ORDER BY Fecha, HoraInicio;
+    `;
+
+    db.all(query, [userId, userId], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener las reservas:', err.message);
+            return res.status(500).json({ success: false, message: 'Error al obtener las reservas.' });
+        }
+
+        if (rows.length > 0) {
+            console.log('Reservas encontradas:', rows); // Depuración: ver las filas obtenidas
+            res.json({ success: true, reservas: rows });
+        } else {
+            console.log('No se encontraron reservas para el usuario:', userId);
+            res.json({ success: true, reservas: [] }); // Asegura que devuelva una respuesta vacía en lugar de nada
         }
     });
 });
