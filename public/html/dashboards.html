@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Dashboard de Estadísticas</h1>
+    <form id="dashboardForm">
+        <label for="chartType">Selecciona el tipo de gráfico:</label>
+        <select id="chartType">
+            <option value="bar">Barras</option>
+            <option value="pie">Torta</option>
+            <option value="line">Líneas</option>
+        </select>
+
+        <label for="filterSexo">Sexo:</label>
+        <select id="filterSexo">
+            <option value="all">Todos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+        </select>
+
+        <label for="filterRangoEdad">Rango de edad:</label>
+        <select id="filterRangoEdad">
+            <option value="all">Todos</option>
+            <option value="18-30">18-30</option>
+            <option value="31-50">31-50</option>
+            <option value="50+">50+</option>
+        </select>
+
+        <label for="filterDia">Día:</label>
+        <select id="filterDia">
+            <option value="all">Todos</option>
+            <option value="Lunes">Lunes</option>
+            <option value="Martes">Martes</option>
+            <option value="Miercoles">Miércoles</option>
+            <option value="Jueves">Jueves</option>
+            <option value="Viernes">Viernes</option>
+        </select>
+
+        <label for="filterMes">Mes:</label>
+        <input type="month" id="filterMes">
+
+        <button type="submit">Generar Gráfico</button>
+    </form>
+
+    <canvas id="chartCanvas"></canvas>
+
+    <script src="/js/dashboards.js"></script>
+</body>
+</html>

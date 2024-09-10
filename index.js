@@ -3,31 +3,29 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const multer = require('multer');
-const session = require('express-session');  // Añadir esto
+const session = require('express-session');
 
 const app = express();
 const port = 3000;
 
-// Configuración de la sesión
+// SESION
 app.use(session({
-    secret: 'mysecretkey',  // Cambia esto por una clave secreta real
+    secret: 'mysecretkey',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }  // Debe ser 'true' si usas HTTPS
+    cookie: { secure: false }  
 }));
 
-
-
+// PARA IAMGENES
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads'); 
+        cb(null, 'public/uploads');
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
-
 const upload = multer({ storage: storage });
 
 const db = new sqlite3.Database('./database.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
@@ -35,11 +33,9 @@ const db = new sqlite3.Database('./database.db', sqlite3.OPEN_READWRITE | sqlite
         console.error('Error al conectar con la base de datos:', err.message);
     } else {
         console.log('Conectado a la base de datos SQLite.');
-        db.run('PRAGMA busy_timeout = 60000'); // 60 segundos de timeout
+        db.run('PRAGMA busy_timeout = 60000');  // 60 segundos de timeout
     }
 });
-
-
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -54,52 +50,64 @@ app.get('/menuUsuario', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/html/menuUsuario.html'));
 });
 
+
+
 app.get('/menuAdm', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/html/menuAdm.html'));
 });
 
-// LOGIN
+//  LOGIN
 app.post('/login', (req, res) => {
     const { IdUsuario, password } = req.body;
 
     const userId = parseInt(IdUsuario.trim(), 10);
 
-    const query = 'SELECT * FROM Usuario WHERE IdUsuario = ?';
-    db.get(query, [userId], (err, row) => {
+    const query = `
+        SELECT U.IdUsuario, U.DNI, U.Password, E.Nombre, E.Apellido, E.Direccion
+        FROM Usuario U
+        INNER JOIN Empleados E ON U.DNI = E.DNI
+        WHERE U.IdUsuario = ? AND U.Password = ?
+    `;
+
+    db.get(query, [userId, password], (err, row) => {
         if (err) {
             console.error('Error en la consulta:', err.message);
             return res.status(500).send('Error interno del servidor');
         }
 
         if (row) {
-            if (row.Password === password) {
-                // Guardar el userId en la sesión del servidor
-                req.session.userId = userId;
-                console.log('User ID guardado en la sesión:', req.session.userId);  /
-                
-                if (row.IdGrupoUsuario === 1) {
-                    return res.redirect('/menuAdm');
-                } else if (row.IdGrupoUsuario === 2) {
-                    return res.redirect('/menuUsuario');
-                } else {
-                    return res.status(400).send('Grupo de usuario no reconocido');
-                }
-            } else {
-                return res.status(401).send('Contraseña incorrecta');
-            }
+            req.session.user = row; // Guardar toda la información del usuario en la sesión
+            res.redirect('/menuUsuario');
         } else {
-            return res.status(404).send('Usuario no encontrado');
+            res.status(401).send('Credenciales incorrectas');
         }
     });
 });
 
-// PLANOS GET
+// Ruta para obtener la información del usuario logueado desde la sesión
+app.get('/getUserInfo', (req, res) => {
+    if (req.session.user) {
+        res.json(req.session.user);
+    } else {
+        res.status(401).json({ message: 'Usuario no logueado' });
+    }
+});
+
+// Ruta para cerrar sesión
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Error al cerrar sesión');
+        }
+        res.redirect('/login');
+    });
+});
+
+// OBTENER PLANOS EN RESERVAS
 app.get('/getPlan', (req, res) => {
     const { piso, tipo } = req.query;
-    console.log(`Recibido: Piso - ${piso}, Tipo - ${tipo}`);
-    
-
     const query = `SELECT * FROM Plano WHERE IdPiso = ? AND Tipo = ? ORDER BY IdPlano DESC LIMIT 1`;
+
     db.get(query, [piso, tipo], (err, row) => {
         if (err) {
             console.error('Error al obtener el plano:', err.message);
@@ -122,7 +130,7 @@ app.get('/getPlan', (req, res) => {
                         yPos: icon.yPos,
                         idAsiento: icon.IdAsiento,
                         texto: `Asiento ${icon.IdAsiento}`,
-                        estado: icon.IdEstado // Añadimos el estado
+                        estado: icon.IdEstado
                     }))
                 });
             });
@@ -130,22 +138,14 @@ app.get('/getPlan', (req, res) => {
             res.json({ success: false, message: 'Plano no encontrado' });
         }
     });
-})
+});
 
-// SAVE PALNOS
+// GARDAR LOS PLANOS DE MODIFICACION
 app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
     const { idPiso, tipo, icons } = req.body;
     const rutaArchivo = `/uploads/${req.file.filename}`;
-
-    console.log('Datos recibidos en /savePlan:', { rutaArchivo, idPiso, tipo, icons });
-
-    if (!rutaArchivo || !idPiso || !tipo || !icons || JSON.parse(icons).length === 0) {
-        console.error('Datos incompletos:', { rutaArchivo, idPiso, tipo, icons });
-        return res.status(400).json({ success: false, message: 'Datos incompletos.' });
-    }
-
-    
     const insertPlanQuery = 'INSERT INTO Plano (RutaArchivo, IdPiso, Tipo) VALUES (?, ?, ?)';
+
     db.run(insertPlanQuery, [rutaArchivo, idPiso, tipo], function (err) {
         if (err) {
             console.error('Error al guardar el plano:', err.message);
@@ -153,26 +153,11 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
         }
 
         const idPlano = this.lastID;
-
-        if (!idPlano) {
-            console.error('No se pudo obtener el ID del plano insertado.');
-            return res.status(500).json({ success: false, message: 'Error al obtener el ID del plano.' });
-        }
-
-        console.log('Plano guardado con ID:', idPlano);
-
-        //(asientos u oficinas)
         const insertIconQuery = 'INSERT INTO Asiento1 (IdPlano, IdPiso, xPos, yPos, IdEstado) VALUES (?, ?, ?, ?, ?)';
         const insertStmt = db.prepare(insertIconQuery);
 
         JSON.parse(icons).forEach(icon => {
-            insertStmt.run([idPlano, idPiso, icon.xPos, icon.yPos, 1], function (err) {
-                if (err) {
-                    console.error('Error al insertar un ícono:', err.message);
-                } else {
-                    console.log('Ícono insertado:', { IdPlano: idPlano });
-                }
-            });
+            insertStmt.run([idPlano, idPiso, icon.xPos, icon.yPos, 1]);
         });
 
         insertStmt.finalize(err => {
@@ -184,14 +169,20 @@ app.post('/savePlan', upload.single('planoImagen'), (req, res) => {
         });
     });
 });
-//reservsa
+
+// RESERVA
+
 app.post('/reserve', (req, res) => {
-    const { idUsuario, floor, date, timeFrom, timeTo, idAsiento } = req.body;
-    console.log('Datos recibidos para la reserva:', { idUsuario, floor, date, timeFrom, timeTo, idAsiento });
+    const { floor, date, timeFrom, timeTo, idAsiento } = req.body;
+    const idUsuario = req.session.userId;  //ID USUARIO
+
 
     if (!idUsuario || !floor || !date || !timeFrom || !timeTo || !idAsiento) {
+        console.log('Datos incompletos:', { idUsuario, floor, date, timeFrom, timeTo, idAsiento });
         return res.status(400).json({ success: false, message: 'Datos incompletos para realizar la reserva.' });
     }
+
+    console.log('Datos recibidos para la reserva:', { idUsuario, floor, date, timeFrom, timeTo, idAsiento });
 
     const checkAvailabilityQuery = 'SELECT IdEstado FROM Asiento1 WHERE IdAsiento = ? AND IdPiso = ?';
 
@@ -201,10 +192,8 @@ app.post('/reserve', (req, res) => {
             return res.status(500).json({ success: false, message: 'Error al verificar disponibilidad.' });
         }
 
-        if (row && row.IdEstado == 1) {  // Estado disponible
-            console.log('Asiento disponible. Procediendo con la reserva...');
-
-            const idEstado = 2;  // Estado reservado
+        if (row && row.IdEstado == 1) {  //DISPOPNIBLe
+            const idEstado = 2;  // RESERVADO
             const insertReservationQuery = `
                 INSERT INTO ReservaEscritorio (IdUsuario, Fecha, HoraInicio, HoraFinal, IdAsiento, IdPiso, IdEstado)
                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -215,7 +204,7 @@ app.post('/reserve', (req, res) => {
                     return res.status(500).json({ success: false, message: 'Error al guardar la reserva.' });
                 }
 
-                console.log('Reserva insertada correctamente.');
+                console.log('Reserva insertada correctamente con ID:', this.lastID);
 
                 const updateSeatStatusQuery = 'UPDATE Asiento1 SET IdEstado = ? WHERE IdAsiento = ? AND IdPiso = ?';
                 db.run(updateSeatStatusQuery, [idEstado, idAsiento, floor], (err) => {
@@ -228,40 +217,13 @@ app.post('/reserve', (req, res) => {
                 });
             });
         } else {
-            if (row) {
-                console.log(`El asiento no está disponible. Estado actual: ${row.IdEstado}`);
-            } else {
-                console.log('El asiento no existe en la base de datos.');
-            }
-            res.status(400).json({ success: false, message: 'El asiento no está disponible.' });
+            console.log(`El asiento no está disponible o no existe. Estado actual: ${row ? row.IdEstado : 'desconocido'}`);
+            return res.status(400).json({ success: false, message: 'El asiento no está disponible.' });
         }
     });
 });
 
-app.post('/cancelReservation', (req, res) => {
-    const { reserva, dia, horario } = req.body;
-
-  
-    const query = `
-        DELETE FROM ReservaEscritorio
-        WHERE IdAsiento = (SELECT IdAsiento FROM Asiento WHERE nombre = ?)
-        AND Fecha = ?
-        AND HoraInicio = ?
-    `;
-
-   
-  
-
-    db.run(query, [asiento.trim(), dia, horario.split(' ')[0]], function(err) {
-        if (err) {
-            console.error('Error al cancelar la reserva:', err.message);
-            return res.status(500).json({ success: false, message: 'Error al cancelar la reserva.' });
-        }
-
-        res.json({ success: true });
-    });
-});
-
+// CHECK IN INDEPENDIENTE SE OFICINA O ESCRITORIO
 app.post('/checkIn', (req, res) => {
     const { idReserva, tipoReserva } = req.body;
 
@@ -282,7 +244,7 @@ app.post('/checkIn', (req, res) => {
         return res.status(400).json({ success: false, message: 'Tipo de reserva no válido.' });
     }
 
-    db.run(query, [idReserva], function(err) {
+    db.run(query, [idReserva], function (err) {
         if (err) {
             console.error('Error al realizar el check-in:', err.message);
             return res.status(500).json({ success: false, message: 'Error al realizar el check-in.' });
@@ -292,7 +254,7 @@ app.post('/checkIn', (req, res) => {
     });
 });
 
-
+// DAA LAS RESERVAS PARA EL CHECK IN 
 app.get('/getReservas', (req, res) => {
     const userId = req.query.userId;
 
@@ -333,15 +295,11 @@ app.get('/getReservas', (req, res) => {
             return res.status(500).json({ success: false, message: 'Error al obtener las reservas.' });
         }
 
-        if (rows.length > 0) {
-            console.log('Reservas encontradas:', rows); // Depuración: ver las filas obtenidas
-            res.json({ success: true, reservas: rows });
-        } else {
-            console.log('No se encontraron reservas para el usuario:', userId);
-            res.json({ success: true, reservas: [] }); // Asegura que devuelva una respuesta vacía en lugar de nada
-        }
+        res.json({ success: true, reservas: rows });
     });
 });
+
+
 
 // Iniciar el servidor
 app.listen(port, () => {

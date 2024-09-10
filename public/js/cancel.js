@@ -3,20 +3,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     cancelButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Obtener la fila correspondiente a la reserva
+            
             const reservationRow = this.closest('tr');
 
-            // Obtener detalles de la reserva
+//DATOS DE LA RESERVA
             const reservationDetails = {
                 reserva: reservationRow.cells[0].textContent,
                 dia: reservationRow.cells[1].textContent,
                 horario: reservationRow.cells[2].textContent
             };
 
-            // Confirmar la cancelación
+            // CONFIRMACANCELAACION
             if (confirm(`¿Estás seguro de que deseas cancelar la reserva para ${reservationDetails.reserva} el ${reservationDetails.dia} en el horario ${reservationDetails.horario}?`)) {
                 
-                // Enviar la solicitud de cancelación al servidor
+                
                 fetch('/cancelReservation', {
                     method: 'POST',
                     headers: {
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         alert('Reserva cancelada exitosamente.');
-                        reservationRow.remove(); // Remover la fila de la tabla
+                        reservationRow.remove(); 
                     } else {
                         alert('Error al cancelar la reserva.');
                     }

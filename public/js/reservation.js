@@ -3,7 +3,7 @@ document.getElementById('reservation-form').addEventListener('submit', function(
 
     const formData = new FormData(this);
     const userId = sessionStorage.getItem('userId');
-    console.log('ID del Usuario:', userId);  // Verificar si el ID se obtiene correctamente
+    console.log('ID del Usuario:', userId);  // ID USUARIO
 
     if (!userId) {
         alert('Error: No se pudo obtener el ID del usuario. Por favor, intenta iniciar sesión nuevamente.');

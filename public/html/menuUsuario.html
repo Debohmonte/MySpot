@@ -12,12 +12,29 @@
         <span class="user-icon">👤</span>
     </div>
 
+    <div class="user-menu" id="userMenu">
+        <ul>
+            <li>Nombre: <span id="userName"></span></li>
+            <li>Apellido: <span id="userLastName"></span></li>
+            <li>Email: <span id="userEmail"></span></li>
+            <li><a href="/logout" id="logout">Cerrar sesión</a></li>
+        </ul>
+    </div>
     <div class="menu-container">
         <button class="menu-item" onclick="navigateTo('/html/type.html')">RESERVAR</button>
         <button class="menu-item" onclick="navigateTo('/html/cancel.html')">CANCELAR</button>
         <button class="menu-item" onclick="navigateTo('/html/dashboard.html')">DASHBOARD</button>
         <button class="menu-item" onclick="navigateTo('/html/checkin.html')">CHECKIN</button>
     </div>
+
+    <div class="user-menu" id="userMenu" style="display: none;"><!-- LOS DATOS DEL EMPLEADO TIENE QUE ESTAR EN UN MENU DESPLEGABLE-->
+        <ul>
+            <li>Nombre: <span id="userName"></span></li>
+            <li>Apellido: <span id="userLastName"></span></li>
+            <li>Email: <span id="userEmail"></span></li>
+            <li><a href="/logout" id="logout">Cerrar sesión</a></li>
+        </ul>
+    </div> 
 
     <script src="/js/menu.js"></script>
 </body>

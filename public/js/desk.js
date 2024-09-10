@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const floorPlanContainer = document.getElementById('floor-plan-container');
 
-    // Captura de la selección de piso
+    
     const floorRadios = document.querySelectorAll('input[name="floor"]');
     floorRadios.forEach(radio => {
         radio.addEventListener('change', loadPlan);
@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const planImage = new Image();
                     planImage.src = data.planImage;
 
-                    floorPlanContainer.innerHTML = '';  // Limpiar el contenedor
-                    floorPlanContainer.appendChild(planImage);  // Añadir la imagen del plano
+                    floorPlanContainer.innerHTML = '';  
+                    floorPlanContainer.appendChild(planImage);  
 
                     planImage.onerror = function() {
                         alert('No se pudo cargar la imagen del plano.');
